@@ -1,24 +1,27 @@
 ;; 10x20
 ;;
-;;
-;;
 (module
     (memory 1)
+
     (global $cursor_row (mut i32))
     (global $cursor_col (mut i32))
+
     (func $index (param $row i32) (param $col i32) (result i32)
         (i32.add
             (i32.const 9)
             (i32.add
                 (i32.mul (i32.const 10) (local.get $row))
                 (local.get $col))))
+
     (func $get_at (param $row i32) (param $col i32) (result i32)
         (i32.load
             (call $index (local.get $row) (local.get $col))))
+
     (func $set_at (param $row i32) (param $col i32) (param $val i32)
         (i32.store
             (call $index (local.get $row) (local.get $col))
             (local.get $val)))
+
     (func $land
         (local $offset_row i32)
         (local $offset_col i32)
@@ -41,6 +44,7 @@
                 (i32.add (i32.const 1) (local.get $offset_row)))
             (br_if $row_loop
                 (i32.ne (i32.const 3) (local.get $offset_row)))))
+
     (func $lnz_row (param $col i32) (result i32)
         (local $row i32)
         (local.set $row (i32.const 2))
@@ -48,12 +52,29 @@
             (br_if $row_loop
                 (i32.load (i32.add (i32.mul (i32.const 3) (local.get $row)) (local.get $col))))
             (local.set $row
-                (i32.sub (local.get $row) (i32.const 1))))
+                (i32.sub (local.get $row) (i32.const 1)))
+            (br_if $row_loop
+                (i32.eq (local.get $row) (i32.const -1))))
         (local.get $row))
-    (func $should_land
-        )
 
-
+    (func $should_land (result i32)
+        (local $row i32)
+        (local.set $row (call $lnz_row (i32.const 0)))
+        (if (i32.and
+                (i32.ne (local.get $row) (i32.const -1))
+                (call $get_at (local.get $row) (i32.const 0)))
+            (return (i32.const 1)))
+        (local.set $row (call $lnz_row (i32.const 1)))
+        (if (i32.and
+                (i32.ne (local.get $row) (i32.const -1))
+                (call $get_at (local.get $row) (i32.const 1)))
+            (return (i32.const 1)))
+        (local.set $row (call $lnz_row (i32.const 2)))
+        (if (i32.and
+                (i32.ne (local.get $row) (i32.const -1))
+                (call $get_at (local.get $row) (i32.const 2)))
+            (return (i32.const 1)))
+        (i32.const 0))
 
     (func $tick
         ()))
