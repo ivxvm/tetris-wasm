@@ -1,0 +1,85 @@
+<!doctype html>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #board {
+        display: grid;
+        grid-template-rows: repeat(20, 30px);
+        grid-template-columns: repeat(10, 30px);
+        grid-auto-rows: 30px;
+        width: 300px;
+        height: 600px;
+        border: solid 1px grey;
+    }
+
+    #board>*.filled {
+        background-color: black;
+    }
+</style>
+
+<body>
+    <div id="board"></div>
+    <script lang="javascript">
+        const board = document.getElementById("board");
+        for (let i = 0; i < 200; i++) {
+            board.appendChild(document.createElement("div"));
+        }
+        WebAssembly
+            .instantiateStreaming(fetch('tetris.wasm'), { js: { debug: (x) => console.log("debug:", x) } })
+            .then(wasm => {
+                const tetris = wasm.instance.exports;
+                const memory = new Int32Array(tetris.memory.buffer);
+                tetris.init();
+                tetris.resetFigure();
+                setInterval(() => {
+                    if (!tetris.isGameOver.value) {
+                        let i = 9;
+                        for (const node of board.childNodes) {
+                            node.setAttribute("class", memory[i++] ? "filled" : "")
+                        }
+                        for (let i = 0; i < 9; i++) {
+                            const y = Math.floor(i / 3);
+                            const x = i % 3;
+                            if (memory[i]) {
+                                board.childNodes[
+                                    (tetris.cursorRow.value + y) * 10 +
+                                    (tetris.cursorColumn.value + x)
+                                ].setAttribute("class", "filled");
+                            }
+                        }
+                        tetris.rng.value = Math.floor(Math.random() * 5);
+                        tetris.tick();
+                    }
+                }, 250);
+                document.addEventListener("keydown", (e) => {
+                    switch (e.key) {
+                        case "ArrowRight": {
+                            tetris.cursorColumn.value = Math.min(9, tetris.cursorColumn.value + 1);
+                            break;
+                        }
+                        case "ArrowLeft": {
+                            tetris.cursorColumn.value = Math.max(0, tetris.cursorColumn.value - 1);
+                            break;
+                        }
+                    }
+                })
+            });
+    </script>
+</body>

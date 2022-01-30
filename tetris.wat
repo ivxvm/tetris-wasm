@@ -1,19 +1,23 @@
 ;; 10x20
 ;; 0 1 2 3 4 5 6 7 8 9
 (module
-    (memory 1)
+    (func $debug (import "js" "debug") (param i32))
 
-    (global $cursor_row (mut i32) (i32.const 0))
-    (global $cursor_col (mut i32) (i32.const 0))
-    (global $rng (mut i32) (i32.const 0))
-    (global $is_game_over (mut i32) (i32.const 0))
+    (memory (export "memory") 1)
+
+    (global $cursor_row (export "cursorRow") (mut i32) (i32.const 0))
+    (global $cursor_col (export "cursorColumn") (mut i32) (i32.const 0))
+    (global $rng (export "rng") (mut i32) (i32.const 0))
+    (global $is_game_over (export "isGameOver") (mut i32) (i32.const 0))
 
     (func $index (param $row i32) (param $col i32) (result i32)
-        (i32.add
-            (i32.const 9)
+        (i32.mul
+            (i32.const 4)
             (i32.add
-                (i32.mul (i32.const 10) (local.get $row))
-                (local.get $col))))
+                (i32.const 9)
+                (i32.add
+                    (i32.mul (i32.const 10) (local.get $row))
+                    (local.get $col)))))
 
     (func $get_at (param $row i32) (param $col i32) (result i32)
         (i32.load
@@ -27,17 +31,24 @@
     (func $land
         (local $offset_row i32)
         (local $offset_col i32)
+        (local $target_val i32)
         (local.set $offset_row (i32.const 0))
-        (local.set $offset_col (i32.const 0))
         (loop $row_loop
+            (local.set $offset_col (i32.const 0))
             (loop $col_loop
-                (call $set_at
-                    (i32.add (global.get $cursor_row) (local.get $offset_row))
-                    (i32.add (global.get $cursor_col) (local.get $offset_col))
+                (local.set $target_val
                     (i32.load
-                        (i32.add
-                            (i32.mul (i32.const 3) (local.get $offset_row))
-                            (local.get $offset_col))))
+                        (i32.mul
+                            (i32.const 4)
+                            (i32.add
+                                (i32.mul (i32.const 3) (local.get $offset_row))
+                                (local.get $offset_col)))))
+                (if (local.get $target_val)
+                    (call $set_at
+                        (i32.add (global.get $cursor_row) (local.get $offset_row))
+                        (i32.add (global.get $cursor_col) (local.get $offset_col))
+                        (local.get $target_val)))
+                (call $debug (local.get $offset_col))
                 (local.set $offset_col
                     (i32.add (i32.const 1) (local.get $offset_col)))
                 (br_if $col_loop
@@ -51,7 +62,12 @@
         (local $row i32)
         (local.set $row (i32.const 2))
         (loop $row_loop
-            (if (i32.load (i32.add (i32.mul (i32.const 3) (local.get $row)) (local.get $col)))
+            (if (i32.load
+                    (i32.mul
+                        (i32.const 4)
+                        (i32.add
+                            (i32.mul (i32.const 3) (local.get $row))
+                            (local.get $col))))
                 (then (return (local.get $row))))
             (local.set $row
                 (i32.sub (local.get $row) (i32.const 1)))
@@ -60,21 +76,43 @@
         (local.get $row))
 
     (func $should_land (result i32)
-        (local $row i32)
-        (local.set $row (call $lnz_row (i32.const 0)))
+        (local $offset_row i32)
+        (local $target_row i32)
+        (local.set $offset_row (call $lnz_row (i32.const 0)))
+        (local.set $target_row
+            (i32.add
+                (i32.const 1)
+                (i32.add (global.get $cursor_row) (local.get $offset_row))))
+        (if (i32.eq (local.get $target_row) (i32.const 20)) (then (return (i32.const 1))))
         (if (i32.and
-                (i32.ne (local.get $row) (i32.const -1))
-                (call $get_at (local.get $row) (i32.const 0)))
+                (i32.ne (local.get $offset_row) (i32.const -1))
+                (call $get_at
+                    (local.get $target_row)
+                    (global.get $cursor_col)))
             (then (return (i32.const 1))))
-        (local.set $row (call $lnz_row (i32.const 1)))
+        (local.set $offset_row (call $lnz_row (i32.const 1)))
+        (local.set $target_row
+            (i32.add
+                (i32.const 1)
+                (i32.add (global.get $cursor_row) (local.get $offset_row))))
+        (if (i32.eq (local.get $target_row) (i32.const 20)) (then (return (i32.const 1))))
         (if (i32.and
-                (i32.ne (local.get $row) (i32.const -1))
-                (call $get_at (local.get $row) (i32.const 1)))
+                (i32.ne (local.get $offset_row) (i32.const -1))
+                (call $get_at
+                    (local.get $target_row)
+                    (i32.add (global.get $cursor_col) (i32.const 1))))
             (then (return (i32.const 1))))
-        (local.set $row (call $lnz_row (i32.const 2)))
+        (local.set $offset_row (call $lnz_row (i32.const 2)))
+        (local.set $target_row
+            (i32.add
+                (i32.const 1)
+                (i32.add (global.get $cursor_row) (local.get $offset_row))))
+        (if (i32.eq (local.get $target_row) (i32.const 20)) (then (return (i32.const 1))))
         (if (i32.and
-                (i32.ne (local.get $row) (i32.const -1))
-                (call $get_at (local.get $row) (i32.const 2)))
+                (i32.ne (local.get $offset_row) (i32.const -1))
+                (call $get_at
+                    (local.get $target_row)
+                    (i32.add (global.get $cursor_col) (i32.const 2))))
             (then (return (i32.const 1))))
         (i32.const 0))
 
@@ -90,70 +128,70 @@
                             ;; 0 1 0
                             ;; 0 1 0
                             ;; 1 1 0
-                            (i32.store (i32.const 0) (i32.const 0))
-                            (i32.store (i32.const 1) (i32.const 1))
-                            (i32.store (i32.const 2) (i32.const 0))
-                            (i32.store (i32.const 3) (i32.const 0))
-                            (i32.store (i32.const 4) (i32.const 1))
-                            (i32.store (i32.const 5) (i32.const 0))
-                            (i32.store (i32.const 6) (i32.const 1))
-                            (i32.store (i32.const 7) (i32.const 1))
-                            (i32.store (i32.const 8) (i32.const 0))
+                            (i32.store (i32.const 00) (i32.const 0))
+                            (i32.store (i32.const 04) (i32.const 1))
+                            (i32.store (i32.const 08) (i32.const 0))
+                            (i32.store (i32.const 12) (i32.const 0))
+                            (i32.store (i32.const 16) (i32.const 1))
+                            (i32.store (i32.const 20) (i32.const 0))
+                            (i32.store (i32.const 24) (i32.const 1))
+                            (i32.store (i32.const 28) (i32.const 1))
+                            (i32.store (i32.const 32) (i32.const 0))
                             (return))
                         ;; 0 0 0
                         ;; 1 1 0
                         ;; 0 1 1
-                        (i32.store (i32.const 0) (i32.const 0))
-                        (i32.store (i32.const 1) (i32.const 0))
-                        (i32.store (i32.const 2) (i32.const 0))
-                        (i32.store (i32.const 3) (i32.const 1))
-                        (i32.store (i32.const 4) (i32.const 1))
-                        (i32.store (i32.const 5) (i32.const 0))
-                        (i32.store (i32.const 6) (i32.const 0))
-                        (i32.store (i32.const 7) (i32.const 1))
-                        (i32.store (i32.const 8) (i32.const 1))
+                        (i32.store (i32.const 00) (i32.const 0))
+                        (i32.store (i32.const 04) (i32.const 0))
+                        (i32.store (i32.const 08) (i32.const 0))
+                        (i32.store (i32.const 12) (i32.const 1))
+                        (i32.store (i32.const 16) (i32.const 1))
+                        (i32.store (i32.const 20) (i32.const 0))
+                        (i32.store (i32.const 24) (i32.const 0))
+                        (i32.store (i32.const 28) (i32.const 1))
+                        (i32.store (i32.const 32) (i32.const 1))
                         (return))
                     ;; 0 0 0
                     ;; 0 1 0
                     ;; 1 1 1
-                    (i32.store (i32.const 0) (i32.const 0))
-                    (i32.store (i32.const 1) (i32.const 0))
-                    (i32.store (i32.const 2) (i32.const 0))
-                    (i32.store (i32.const 3) (i32.const 0))
-                    (i32.store (i32.const 4) (i32.const 1))
-                    (i32.store (i32.const 5) (i32.const 0))
-                    (i32.store (i32.const 6) (i32.const 1))
-                    (i32.store (i32.const 7) (i32.const 1))
-                    (i32.store (i32.const 8) (i32.const 1))
+                    (i32.store (i32.const 00) (i32.const 0))
+                    (i32.store (i32.const 04) (i32.const 0))
+                    (i32.store (i32.const 08) (i32.const 0))
+                    (i32.store (i32.const 12) (i32.const 0))
+                    (i32.store (i32.const 16) (i32.const 1))
+                    (i32.store (i32.const 20) (i32.const 0))
+                    (i32.store (i32.const 24) (i32.const 1))
+                    (i32.store (i32.const 28) (i32.const 1))
+                    (i32.store (i32.const 32) (i32.const 1))
                     (return))
                 ;; 0 0 0
                 ;; 1 1 0
                 ;; 1 1 0
-                (i32.store (i32.const 0) (i32.const 0))
-                (i32.store (i32.const 1) (i32.const 0))
-                (i32.store (i32.const 2) (i32.const 0))
-                (i32.store (i32.const 3) (i32.const 1))
-                (i32.store (i32.const 4) (i32.const 1))
-                (i32.store (i32.const 5) (i32.const 0))
-                (i32.store (i32.const 6) (i32.const 1))
-                (i32.store (i32.const 7) (i32.const 1))
-                (i32.store (i32.const 8) (i32.const 0))
+                (i32.store (i32.const 00) (i32.const 0))
+                (i32.store (i32.const 04) (i32.const 0))
+                (i32.store (i32.const 08) (i32.const 0))
+                (i32.store (i32.const 12) (i32.const 1))
+                (i32.store (i32.const 16) (i32.const 1))
+                (i32.store (i32.const 20) (i32.const 0))
+                (i32.store (i32.const 24) (i32.const 1))
+                (i32.store (i32.const 28) (i32.const 1))
+                (i32.store (i32.const 32) (i32.const 0))
                 (return))
             ;; 0 1 0
             ;; 0 1 0
             ;; 0 1 0
-            (i32.store (i32.const 0) (i32.const 0))
-            (i32.store (i32.const 1) (i32.const 1))
-            (i32.store (i32.const 2) (i32.const 0))
-            (i32.store (i32.const 3) (i32.const 0))
-            (i32.store (i32.const 4) (i32.const 1))
-            (i32.store (i32.const 5) (i32.const 0))
-            (i32.store (i32.const 6) (i32.const 0))
-            (i32.store (i32.const 7) (i32.const 1))
-            (i32.store (i32.const 8) (i32.const 0))
+            (i32.store (i32.const 00) (i32.const 0))
+            (i32.store (i32.const 04) (i32.const 1))
+            (i32.store (i32.const 08) (i32.const 0))
+            (i32.store (i32.const 12) (i32.const 0))
+            (i32.store (i32.const 16) (i32.const 1))
+            (i32.store (i32.const 20) (i32.const 0))
+            (i32.store (i32.const 24) (i32.const 0))
+            (i32.store (i32.const 28) (i32.const 1))
+            (i32.store (i32.const 32) (i32.const 0))
             (return)))
 
-    (func $rotate_figure
+    (func $rotate_figure (export "rotateFigure")
         (local $temp0 i32)
         (local $temp1 i32)
         (local $temp2 i32)
@@ -163,15 +201,15 @@
         (local $temp6 i32)
         (local $temp7 i32)
         (local $temp8 i32)
-        (local.set $temp0 (i32.load (i32.const 0)))
-        (local.set $temp1 (i32.load (i32.const 1)))
-        (local.set $temp2 (i32.load (i32.const 2)))
-        (local.set $temp3 (i32.load (i32.const 3)))
-        (local.set $temp4 (i32.load (i32.const 4)))
-        (local.set $temp5 (i32.load (i32.const 5)))
-        (local.set $temp6 (i32.load (i32.const 6)))
-        (local.set $temp7 (i32.load (i32.const 7)))
-        (local.set $temp8 (i32.load (i32.const 8)))
+        (local.set $temp0 (i32.load (i32.const 00)))
+        (local.set $temp1 (i32.load (i32.const 04)))
+        (local.set $temp2 (i32.load (i32.const 08)))
+        (local.set $temp3 (i32.load (i32.const 12)))
+        (local.set $temp4 (i32.load (i32.const 16)))
+        (local.set $temp5 (i32.load (i32.const 20)))
+        (local.set $temp6 (i32.load (i32.const 24)))
+        (local.set $temp7 (i32.load (i32.const 28)))
+        (local.set $temp8 (i32.load (i32.const 32)))
         ;; 0 1 2
         ;; 3 4 5
         ;; 6 7 8
@@ -179,15 +217,15 @@
         ;; 6 3 0
         ;; 7 4 1
         ;; 8 5 2
-        (i32.store (i32.const 0) (local.get $temp6))
-        (i32.store (i32.const 1) (local.get $temp3))
-        (i32.store (i32.const 2) (local.get $temp0))
-        (i32.store (i32.const 3) (local.get $temp7))
-        (i32.store (i32.const 4) (local.get $temp4))
-        (i32.store (i32.const 5) (local.get $temp1))
-        (i32.store (i32.const 6) (local.get $temp8))
-        (i32.store (i32.const 7) (local.get $temp5))
-        (i32.store (i32.const 8) (local.get $temp2)))
+        (i32.store (i32.const 00) (local.get $temp6))
+        (i32.store (i32.const 04) (local.get $temp3))
+        (i32.store (i32.const 08) (local.get $temp0))
+        (i32.store (i32.const 12) (local.get $temp7))
+        (i32.store (i32.const 16) (local.get $temp4))
+        (i32.store (i32.const 20) (local.get $temp1))
+        (i32.store (i32.const 24) (local.get $temp8))
+        (i32.store (i32.const 28) (local.get $temp5))
+        (i32.store (i32.const 32) (local.get $temp2)))
 
     (func $process_filled_rows
         (local $row i32)
@@ -244,16 +282,23 @@
             (br_if $col_loop
                 (i32.ne (local.get $col) (i32.const 10)))))
 
-    (func $tick
+    (func (export "init")
+        (memory.fill (i32.const 0) (i32.const 512) (i32.const 0)))
+
+    (func $reset_figure (export "resetFigure")
+        (call $generate_figure (global.get $rng))
+        (global.set $cursor_row (i32.const 0))
+        (global.set $cursor_col (i32.const 4)))
+
+    (func $tick (export "tick")
         (if (call $should_land)
             (then
                 (call $land)
-                (call $process_filled_rows)
-                (call $generate_figure (global.get $rng))
-                (global.set $cursor_row (i32.const 0))
-                (global.set $cursor_col (i32.const 4))
+                ;; (call $process_filled_rows)
+                (call $reset_figure)
                 (if (call $should_land)
-                    (global.set $is_game_over (i32.const 1))))
+                    (global.set $is_game_over (i32.const 1)))
+                    )
             (else
                 (global.set $cursor_row
                     (i32.add (global.get $cursor_row) (i32.const 1)))))))
