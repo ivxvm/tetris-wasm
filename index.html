@@ -48,36 +48,56 @@
                 const memory = new Int32Array(tetris.memory.buffer);
                 tetris.init();
                 tetris.resetFigure();
+                let tickCount = 0;
+                let tickDivider = 6;
+                const render = () => {
+                    let i = 9;
+                    for (const node of board.childNodes) {
+                        node.setAttribute("class", memory[i++] ? "filled" : "")
+                    }
+                    for (let i = 0; i < 9; i++) {
+                        const y = Math.floor(i / 3);
+                        const x = i % 3;
+                        if (memory[i]) {
+                            board.childNodes[
+                                (tetris.cursorRow.value + y) * 10 +
+                                (tetris.cursorColumn.value + x)
+                            ].setAttribute("class", "filled");
+                        }
+                    }
+                }
                 setInterval(() => {
                     if (!tetris.isGameOver.value) {
-                        let i = 9;
-                        for (const node of board.childNodes) {
-                            node.setAttribute("class", memory[i++] ? "filled" : "")
-                        }
-                        for (let i = 0; i < 9; i++) {
-                            const y = Math.floor(i / 3);
-                            const x = i % 3;
-                            if (memory[i]) {
-                                board.childNodes[
-                                    (tetris.cursorRow.value + y) * 10 +
-                                    (tetris.cursorColumn.value + x)
-                                ].setAttribute("class", "filled");
-                            }
-                        }
+                        render();
+                    }
+                    if (tickCount++ % tickDivider == 0) {
                         tetris.rng.value = Math.floor(Math.random() * 5);
                         tetris.tick();
                     }
-                }, 250);
+                }, 50);
                 document.addEventListener("keydown", (e) => {
                     switch (e.key) {
+                        case " ": {
+                            tetris.rotateFigure();
+                            break;
+                        }
                         case "ArrowRight": {
-                            tetris.cursorColumn.value = Math.min(9, tetris.cursorColumn.value + 1);
+                            tetris.moveRight();
                             break;
                         }
                         case "ArrowLeft": {
-                            tetris.cursorColumn.value = Math.max(0, tetris.cursorColumn.value - 1);
+                            tetris.moveLeft();
                             break;
                         }
+                        case "ArrowDown": {
+                            tickDivider = 2;
+                            break;
+                        }
+                    }
+                });
+                document.addEventListener("keyup", (e) => {
+                    if (e.key == "ArrowDown") {
+                        tickDivider = 6;
                     }
                 })
             });

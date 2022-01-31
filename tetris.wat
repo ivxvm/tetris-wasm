@@ -48,7 +48,6 @@
                         (i32.add (global.get $cursor_row) (local.get $offset_row))
                         (i32.add (global.get $cursor_col) (local.get $offset_col))
                         (local.get $target_val)))
-                (call $debug (local.get $offset_col))
                 (local.set $offset_col
                     (i32.add (i32.const 1) (local.get $offset_col)))
                 (br_if $col_loop
@@ -227,12 +226,75 @@
         (i32.store (i32.const 28) (local.get $temp5))
         (i32.store (i32.const 32) (local.get $temp2)))
 
+    (func $move_right (export "moveRight")
+        (local $col_offset i32)
+        (local $row i32)
+        (local $col i32)
+        (local.set $row (global.get $cursor_row))
+        (block
+            (if (i32.load (i32.const 0)) (then (local.set $col_offset (i32.const 1)) (br 0)))
+            (if (i32.load (i32.const 4)) (then (local.set $col_offset (i32.const 2)) (br 0)))
+            (if (i32.load (i32.const 8)) (then (local.set $col_offset (i32.const 3)) (br 0))))
+        (local.set $col (i32.add (global.get $cursor_col) (local.get $col_offset)))
+        (if (i32.eq (local.get $col) (i32.const 10)) (then (return)))
+        (if (call $get_at (local.get $row) (local.get $col)) (then (return)))
+        (local.set $row (i32.add (i32.const 1) (local.get $row)))
+        (block
+            (if (i32.load (i32.const 12)) (then (local.set $col_offset (i32.const 1)) (br 0)))
+            (if (i32.load (i32.const 16)) (then (local.set $col_offset (i32.const 2)) (br 0)))
+            (if (i32.load (i32.const 20)) (then (local.set $col_offset (i32.const 3)) (br 0))))
+        (local.set $col (i32.add (global.get $cursor_col) (local.get $col_offset)))
+        (if (i32.eq (local.get $col) (i32.const 10)) (then (return)))
+        (if (call $get_at (local.get $row) (local.get $col)) (then (return)))
+        (local.set $row (i32.add (i32.const 1) (local.get $row)))
+        (block
+            (if (i32.load (i32.const 24)) (then (local.set $col_offset (i32.const 1)) (br 0)))
+            (if (i32.load (i32.const 28)) (then (local.set $col_offset (i32.const 2)) (br 0)))
+            (if (i32.load (i32.const 32)) (then (local.set $col_offset (i32.const 3)) (br 0))))
+        (local.set $col (i32.add (global.get $cursor_col) (local.get $col_offset)))
+        (if (i32.eq (local.get $col) (i32.const 10)) (then (return)))
+        (if (call $get_at (local.get $row) (local.get $col)) (then (return)))
+        (global.set $cursor_col
+            (i32.add (global.get $cursor_col) (i32.const 1))))
+
+    (func $move_left (export "moveLeft")
+        (local $col_offset i32)
+        (local $row i32)
+        (local $col i32)
+        (local.set $row (global.get $cursor_row))
+        (block
+            (if (i32.load (i32.const 8)) (then (local.set $col_offset (i32.const  1)) (br 0)))
+            (if (i32.load (i32.const 4)) (then (local.set $col_offset (i32.const  0)) (br 0)))
+            (if (i32.load (i32.const 0)) (then (local.set $col_offset (i32.const -1)) (br 0))))
+        (local.set $col (i32.add (global.get $cursor_col) (local.get $col_offset)))
+        (if (i32.eq (local.get $col) (i32.const -1)) (then (return)))
+        (if (call $get_at (local.get $row) (local.get $col)) (then (return)))
+        (local.set $row (i32.add (i32.const 1) (local.get $row)))
+        (block
+            (if (i32.load (i32.const 20)) (then (local.set $col_offset (i32.const  1)) (br 0)))
+            (if (i32.load (i32.const 16)) (then (local.set $col_offset (i32.const  0)) (br 0)))
+            (if (i32.load (i32.const 12)) (then (local.set $col_offset (i32.const -1)) (br 0))))
+        (local.set $col (i32.add (global.get $cursor_col) (local.get $col_offset)))
+        (if (i32.eq (local.get $col) (i32.const -1)) (then (return)))
+        (if (call $get_at (local.get $row) (local.get $col)) (then (return)))
+        (local.set $row (i32.add (i32.const 1) (local.get $row)))
+        (block
+            (if (i32.load (i32.const 32)) (then (local.set $col_offset (i32.const  1)) (br 0)))
+            (if (i32.load (i32.const 28)) (then (local.set $col_offset (i32.const  0)) (br 0)))
+            (if (i32.load (i32.const 24)) (then (local.set $col_offset (i32.const -1)) (br 0))))
+        (local.set $col (i32.add (global.get $cursor_col) (local.get $col_offset)))
+        (if (i32.eq (local.get $col) (i32.const -1)) (then (return)))
+        (if (call $get_at (local.get $row) (local.get $col)) (then (return)))
+        (global.set $cursor_col
+            (i32.sub (global.get $cursor_col) (i32.const 1))))
+
     (func $process_filled_rows
         (local $row i32)
         (local $col i32)
         (local $has_empty_spaces i32)
         (local.set $row (i32.const 0))
         (loop $row_loop
+            (local.set $has_empty_spaces (i32.const 0))
             (local.set $col (i32.const 0))
             (block $col_loop_block
                 (loop $col_loop
@@ -294,11 +356,10 @@
         (if (call $should_land)
             (then
                 (call $land)
-                ;; (call $process_filled_rows)
+                (call $process_filled_rows)
                 (call $reset_figure)
                 (if (call $should_land)
-                    (global.set $is_game_over (i32.const 1)))
-                    )
+                    (global.set $is_game_over (i32.const 1))))
             (else
                 (global.set $cursor_row
                     (i32.add (global.get $cursor_row) (i32.const 1)))))))
