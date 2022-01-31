@@ -20,6 +20,9 @@
                     (local.get $col)))))
 
     (func $get_at (param $row i32) (param $col i32) (result i32)
+        (if (i32.ge_s (local.get $col) (i32.const 10)) (then (return (i32.const 1))))
+        (if (i32.le_s (local.get $col) (i32.const -1)) (then (return (i32.const 1))))
+        (if (i32.ge_s (local.get $row) (i32.const 20)) (then (return (i32.const 1))))
         (i32.load
             (call $index (local.get $row) (local.get $col))))
 
@@ -200,15 +203,63 @@
         (local $temp6 i32)
         (local $temp7 i32)
         (local $temp8 i32)
-        (local.set $temp0 (i32.load (i32.const 00)))
-        (local.set $temp1 (i32.load (i32.const 04)))
-        (local.set $temp2 (i32.load (i32.const 08)))
+        (local.set $temp0 (i32.load (i32.const  0)))
+        (local.set $temp1 (i32.load (i32.const  4)))
+        (local.set $temp2 (i32.load (i32.const  8)))
         (local.set $temp3 (i32.load (i32.const 12)))
         (local.set $temp4 (i32.load (i32.const 16)))
         (local.set $temp5 (i32.load (i32.const 20)))
         (local.set $temp6 (i32.load (i32.const 24)))
         (local.set $temp7 (i32.load (i32.const 28)))
         (local.set $temp8 (i32.load (i32.const 32)))
+        (if (i32.and
+                (local.get $temp0)
+                (call $get_at
+                    (global.get $cursor_row)
+                    (i32.add (global.get $cursor_col) (i32.const 2))))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp1)
+                (call $get_at
+                    (i32.add (global.get $cursor_row) (i32.const 1))
+                    (i32.add (global.get $cursor_col) (i32.const 2))))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp2)
+                (call $get_at
+                    (i32.add (global.get $cursor_row) (i32.const 2))
+                    (i32.add (global.get $cursor_col) (i32.const 2))))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp3)
+                (call $get_at
+                    (global.get $cursor_row)
+                    (i32.add (global.get $cursor_col) (i32.const 1))))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp5)
+                (call $get_at
+                    (i32.add (global.get $cursor_row) (i32.const 2))
+                    (i32.add (global.get $cursor_col) (i32.const 1))))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp6)
+                (call $get_at
+                    (global.get $cursor_row)
+                    (global.get $cursor_col)))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp7)
+                (call $get_at
+                    (i32.add (global.get $cursor_row) (i32.const 1))
+                    (global.get $cursor_col)))
+            (then (return)))
+        (if (i32.and
+                (local.get $temp8)
+                (call $get_at
+                    (i32.add (global.get $cursor_row) (i32.const 2))
+                    (global.get $cursor_col)))
+            (then (return)))
         ;; 0 1 2
         ;; 3 4 5
         ;; 6 7 8
