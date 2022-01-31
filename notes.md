@@ -1,7 +1,7 @@
-* WASM feels somewhat higher level than typical assembly languages
+* WebAssembly feels somewhat higher level than typical assembly languages
 
 * There is a syntactic sugar called "folded form expressions",
-which makes stack-macnine applications look like normal function applications
+which makes stack-machine applications look like normal function applications
 
 * The best way to see how certain constructs are used is to read the testsuite
 https://github.com/WebAssembly/testsuite/
