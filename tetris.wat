@@ -124,72 +124,100 @@
                     (block
                         (block
                             (block
-                                (local.get $index)
-                                (br_table 0 1 2 3 4))
+                                (block
+                                    (block
+                                        (local.get $index)
+                                        (br_table 0 1 2 3 4 5 6))
+                                    ;; 0 1 0
+                                    ;; 0 1 0
+                                    ;; 1 1 0
+                                    (i32.store (i32.const 00) (i32.const 0))
+                                    (i32.store (i32.const 04) (i32.const 1))
+                                    (i32.store (i32.const 08) (i32.const 0))
+                                    (i32.store (i32.const 12) (i32.const 0))
+                                    (i32.store (i32.const 16) (i32.const 1))
+                                    (i32.store (i32.const 20) (i32.const 0))
+                                    (i32.store (i32.const 24) (i32.const 1))
+                                    (i32.store (i32.const 28) (i32.const 1))
+                                    (i32.store (i32.const 32) (i32.const 0))
+                                    (return))
+                                ;; 0 0 0
+                                ;; 1 1 0
+                                ;; 0 1 1
+                                (i32.store (i32.const 00) (i32.const 0))
+                                (i32.store (i32.const 04) (i32.const 0))
+                                (i32.store (i32.const 08) (i32.const 0))
+                                (i32.store (i32.const 12) (i32.const 1))
+                                (i32.store (i32.const 16) (i32.const 1))
+                                (i32.store (i32.const 20) (i32.const 0))
+                                (i32.store (i32.const 24) (i32.const 0))
+                                (i32.store (i32.const 28) (i32.const 1))
+                                (i32.store (i32.const 32) (i32.const 1))
+                                (return))
+                            ;; 0 0 0
                             ;; 0 1 0
-                            ;; 0 1 0
-                            ;; 1 1 0
+                            ;; 1 1 1
                             (i32.store (i32.const 00) (i32.const 0))
-                            (i32.store (i32.const 04) (i32.const 1))
+                            (i32.store (i32.const 04) (i32.const 0))
                             (i32.store (i32.const 08) (i32.const 0))
                             (i32.store (i32.const 12) (i32.const 0))
                             (i32.store (i32.const 16) (i32.const 1))
                             (i32.store (i32.const 20) (i32.const 0))
                             (i32.store (i32.const 24) (i32.const 1))
                             (i32.store (i32.const 28) (i32.const 1))
-                            (i32.store (i32.const 32) (i32.const 0))
+                            (i32.store (i32.const 32) (i32.const 1))
                             (return))
                         ;; 0 0 0
                         ;; 1 1 0
-                        ;; 0 1 1
+                        ;; 1 1 0
                         (i32.store (i32.const 00) (i32.const 0))
                         (i32.store (i32.const 04) (i32.const 0))
                         (i32.store (i32.const 08) (i32.const 0))
                         (i32.store (i32.const 12) (i32.const 1))
                         (i32.store (i32.const 16) (i32.const 1))
                         (i32.store (i32.const 20) (i32.const 0))
-                        (i32.store (i32.const 24) (i32.const 0))
+                        (i32.store (i32.const 24) (i32.const 1))
                         (i32.store (i32.const 28) (i32.const 1))
-                        (i32.store (i32.const 32) (i32.const 1))
+                        (i32.store (i32.const 32) (i32.const 0))
                         (return))
-                    ;; 0 0 0
                     ;; 0 1 0
-                    ;; 1 1 1
+                    ;; 0 1 0
+                    ;; 0 1 0
                     (i32.store (i32.const 00) (i32.const 0))
-                    (i32.store (i32.const 04) (i32.const 0))
+                    (i32.store (i32.const 04) (i32.const 1))
                     (i32.store (i32.const 08) (i32.const 0))
                     (i32.store (i32.const 12) (i32.const 0))
                     (i32.store (i32.const 16) (i32.const 1))
                     (i32.store (i32.const 20) (i32.const 0))
-                    (i32.store (i32.const 24) (i32.const 1))
+                    (i32.store (i32.const 24) (i32.const 0))
                     (i32.store (i32.const 28) (i32.const 1))
-                    (i32.store (i32.const 32) (i32.const 1))
+                    (i32.store (i32.const 32) (i32.const 0))
                     (return))
-                ;; 0 0 0
-                ;; 1 1 0
-                ;; 1 1 0
+                ;; 0 1 0
+                ;; 0 1 0
+                ;; 1 1 1
                 (i32.store (i32.const 00) (i32.const 0))
-                (i32.store (i32.const 04) (i32.const 0))
+                (i32.store (i32.const 04) (i32.const 1))
                 (i32.store (i32.const 08) (i32.const 0))
-                (i32.store (i32.const 12) (i32.const 1))
+                (i32.store (i32.const 12) (i32.const 0))
                 (i32.store (i32.const 16) (i32.const 1))
                 (i32.store (i32.const 20) (i32.const 0))
                 (i32.store (i32.const 24) (i32.const 1))
                 (i32.store (i32.const 28) (i32.const 1))
-                (i32.store (i32.const 32) (i32.const 0))
+                (i32.store (i32.const 32) (i32.const 1))
                 (return))
+            ;; 0 0 0
             ;; 0 1 0
-            ;; 0 1 0
-            ;; 0 1 0
+            ;; 0 1 1
             (i32.store (i32.const 00) (i32.const 0))
-            (i32.store (i32.const 04) (i32.const 1))
+            (i32.store (i32.const 04) (i32.const 0))
             (i32.store (i32.const 08) (i32.const 0))
             (i32.store (i32.const 12) (i32.const 0))
             (i32.store (i32.const 16) (i32.const 1))
             (i32.store (i32.const 20) (i32.const 0))
             (i32.store (i32.const 24) (i32.const 0))
             (i32.store (i32.const 28) (i32.const 1))
-            (i32.store (i32.const 32) (i32.const 0))
+            (i32.store (i32.const 32) (i32.const 1))
             (return)))
 
     (func $rotate_figure (export "rotateFigure")
