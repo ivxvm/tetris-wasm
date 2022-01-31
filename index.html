@@ -89,25 +89,29 @@
                     if (!tetris.isGameOver.value) {
                         render();
                     }
-                    if (tickCount++ % tickDivider == 0) {
+                    if (tickCount++ % tickDivider === 0) {
                         tetris.rng.value = Math.floor(Math.random() * 5);
                         tetris.tick();
                     }
                 }, 50);
                 document.addEventListener("keydown", (e) => {
                     switch (e.key) {
+                        case "Enter":
                         case " ": {
                             tetris.rotateFigure();
                             break;
                         }
+                        case "d":
                         case "ArrowRight": {
                             tetris.moveRight();
                             break;
                         }
+                        case "a":
                         case "ArrowLeft": {
                             tetris.moveLeft();
                             break;
                         }
+                        case "s":
                         case "ArrowDown": {
                             tickDivider = 2;
                             break;
@@ -115,7 +119,7 @@
                     }
                 });
                 document.addEventListener("keyup", (e) => {
-                    if (e.key == "ArrowDown") {
+                    if (e.key === "ArrowDown" || e.key === "s") {
                         tickDivider = 6;
                     }
                 })
