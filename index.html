@@ -7,6 +7,7 @@
     html,
     body {
         padding: 0;
+        padding-bottom: 32px;
         margin: 0;
         width: 100%;
         height: 100%;
@@ -15,31 +16,48 @@
 
     body {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
     }
 
     #board {
         display: grid;
-        grid-template-rows: repeat(20, 30px);
+        grid-template-rows: repeat(18, 30px);
         grid-template-columns: repeat(10, 30px);
         grid-auto-rows: 30px;
-        width: 300px;
-        height: 600px;
-        border: solid 1px grey;
+        grid-gap: 4px;
+        width: 340px;
+        height: 612px;
+        border: solid 8px black;
+        padding-left: 4px;
     }
 
     #board>*.filled {
         background-color: black;
     }
+
+    #score-container {
+        color: black;
+        font-size: 48px;
+        font-family: monospace;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
 </style>
 
 <body>
+    <div id="score-container">Score: <span id="score"></span></div>
     <div id="board"></div>
     <script lang="javascript">
         const board = document.getElementById("board");
+        const score = document.getElementById("score");
         for (let i = 0; i < 200; i++) {
-            board.appendChild(document.createElement("div"));
+            const elem = document.createElement("div");
+            if (i < 20) {
+                elem.style.display = "none";
+            }
+            board.appendChild(elem);
         }
         WebAssembly
             .instantiateStreaming(fetch('tetris.wasm'), { js: { debug: (x) => console.log("debug:", x) } })
@@ -65,6 +83,7 @@
                             ].setAttribute("class", "filled");
                         }
                     }
+                    score.innerText = tetris.score.value;
                 }
                 setInterval(() => {
                     if (!tetris.isGameOver.value) {

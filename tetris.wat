@@ -1,5 +1,3 @@
-;; 10x20
-;; 0 1 2 3 4 5 6 7 8 9
 (module
     (func $debug (import "js" "debug") (param i32))
 
@@ -9,6 +7,7 @@
     (global $cursor_col (export "cursorColumn") (mut i32) (i32.const 0))
     (global $rng (export "rng") (mut i32) (i32.const 0))
     (global $is_game_over (export "isGameOver") (mut i32) (i32.const 0))
+    (global $score (export "score") (mut i32) (i32.const 0))
 
     (func $index (param $row i32) (param $col i32) (result i32)
         (i32.mul
@@ -359,6 +358,8 @@
                         (i32.ne (local.get $col) (i32.const 10)))))
             (if (i32.eqz (local.get $has_empty_spaces))
                 (then
+                    (global.set $score
+                        (i32.add (i32.const 10) (global.get $score)))
                     (call $shift_rows (local.get $row))
                     (call $clear_row (i32.const 0)))
                 (else
@@ -396,7 +397,8 @@
                 (i32.ne (local.get $col) (i32.const 10)))))
 
     (func (export "init")
-        (memory.fill (i32.const 0) (i32.const 512) (i32.const 0)))
+        (memory.fill (i32.const 0) (i32.const 512) (i32.const 0))
+        (global.set $score (i32.const 0)))
 
     (func $reset_figure (export "resetFigure")
         (call $generate_figure (global.get $rng))
