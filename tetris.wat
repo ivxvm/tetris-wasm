@@ -342,6 +342,8 @@
         (local $row i32)
         (local $col i32)
         (local $has_empty_spaces i32)
+        (local $score_multiplier i32)
+        (local.set $score_multiplier (i32.const 1))
         (local.set $row (i32.const 0))
         (loop $row_loop
             (local.set $has_empty_spaces (i32.const 0))
@@ -359,7 +361,11 @@
             (if (i32.eqz (local.get $has_empty_spaces))
                 (then
                     (global.set $score
-                        (i32.add (i32.const 10) (global.get $score)))
+                        (i32.add
+                            (global.get $score)
+                            (i32.mul (local.get $score_multiplier) (i32.const 10))))
+                    (local.set $score_multiplier
+                        (i32.mul (local.get $score_multiplier) (i32.const 2)))
                     (call $shift_rows (local.get $row))
                     (call $clear_row (i32.const 0)))
                 (else
